@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <!-- Spring 自身日志配置，将source对应的变量配置到application.yml或者application.properties中-->
+    <!--系统ID-->
+    <springProperty scope="context" name="sysCode" source="bole.application.sys-code" defaultValue="" />
+    <!--应用名称-->
+    <springProperty scope="context" name="appCode" source="spring.application.name" defaultValue="" />
+    <!--应用实例组ID-->
+    <springProperty scope="context" name="appInstGrpCode" source="bole.application.app-inst-grp-code" defaultValue="default" />
+    <!--应用实例ID-->
+    <springProperty scope="context" name="appInstId" source="bole.application.app-inst-id" defaultValue="" />
+
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+
+    <!-- 日志脱敏配置 -->
+    <include resource="com/bob/bole/log/desensitization/log-desensitization.xml" />
+
+    <!--日志存放目录-->
+    <property name="LOG_FOLDER"                          value="${LOG_FOLDER:-./logs/}" />
+    <!--日志文件名称-->
+    <property name="LOG_NAME"                          value="${LOG_NAME:-app.log}" />
+    <!--控制台模式-->
+    <property name="BOLE_DAP_APP_LOG_PATTERN_CONSOLE"    value="${BOLE_DAP_APP_LOG_PATTERN_CONSOLE:-[%d{yyyy-MM-dd HH:mm:ss.SSS}] %level [${sysCode},${appCode},${appInstGrpCode},${appInstId}][%thread][%X{flowId:-}][%X{traceId:-}][%X{spanId:-}][%X{monitor:-}] %logger{36}.%M:%line - %msg%n}}" />
+    <!--文件模式-->
+    <property name="BOLE_DAP_APP_LOG_PATTERN_FILE"       value="${BOLE_DAP_APP_LOG_PATTERN_FILE:-[%d{yyyy-MM-dd HH:mm:ss.SSS}] %level [${sysCode},
+
+${appCode},${appInstGrpCode},${appInstId}][%thread][%X{flowId:-}][%X{traceId:-}][%X{spanId:-}][%X{monitor:-}] %logger{36}.%M:%line - %msg%n}}" />
+    <!--日志打印级别：生产环境建议WRAN，测试环境建议INFO-->
+    <property name="BOLE_DAP_APP_LOG_LEVEL"              value="${BOLE_DAP_APP_LOG_LEVEL:-Info}"/>
+    <!--单个日志文件大小：30MB-->
+    <property name="BOLE_DAP_APP_LOG_FILE_MAX_SIZE"      value="${BOLE_DAP_APP_LOG_FILE_MAX_SIZE:-30MB}"/>
+    <!--保留日志天数：15天-->
+    <property name="BOLE_DAP_APP_LOG_FILE_MAX_HISTORY"   value="${BOLE_DAP_APP_LOG_FILE_MAX_HISTORY:-15}"/>
+    <!--日志总大小：2G，超过2G后会自动清理-->
+    <property name="BOLE_DAP_APP_LOG_FILE_TOTAL_SIZE"    value="${BOLE_DAP_APP_LOG_FILE_TOTAL_SIZE:-2GB}"/>
+    <!--日志存放全路径-->
+    <property name="BOLE_DAP_APP_LOG_FILE"               value="${BOLE_DAP_APP_LOG_FILE:-${LOG_FOLDER}/${LOG_NAME}}" />
+
+
+    <!--控制台日志打印配置-->
+    <appender name="BOLE_APP_LOG_APPENDER_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${BOLE_DAP_APP_LOG_PATTERN_CONSOLE}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!--文件日志打印配置-->
+    <appender name="BOLE_APP_LOG_APPENDER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${BOLE_DAP_APP_LOG_PATTERN_FILE}</pattern>
+        </encoder>
+        <file>${BOLE_DAP_APP_LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${BOLE_DAP_APP_LOG_FILE}.%d{yyyy-MM-dd}.%i</fileNamePattern>
+            <maxFileSize>${BOLE_DAP_APP_LOG_FILE_MAX_SIZE}</maxFileSize>
+            <maxHistory>${BOLE_DAP_APP_LOG_FILE_MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${BOLE_DAP_APP_LOG_FILE_TOTAL_SIZE}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!--文件异步日志配置，可提高应用性能-->
+    <appender name="BOLE_APP_LOG_APPENDER_FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="BOLE_APP_LOG_APPENDER_FILE"/>
+    </appender>
+
+    <logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>
+    <logger name="org.apache.catalina.util.LifecycleBase" level="ERROR"/>
+    <logger name="org.apache.coyote.http11.Http11NioProtocol" level="WARN"/>
+    <logger name="org.apache.sshd.common.util.SecurityUtils" level="WARN"/>
+    <logger name="org.apache.tomcat.util.net.NioSelectorPool" level="WARN"/>
+    <logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="ERROR"/>
+    <logger name="org.hibernate.validator.internal.util.Version" level="WARN"/>
+
+    <!--打印mybatis的sql日志，请补充mapper包的全名-->
+    <!--<logger name="com...mapper" level="DEBUG"/>-->
+    
+    <!--配置日志级别和打印的appender-->
+    <root level="${BOLE_DAP_APP_LOG_LEVEL}">
+        <appender-ref ref="BOLE_APP_LOG_APPENDER_CONSOLE" />
+        <appender-ref ref="BOLE_APP_LOG_APPENDER_FILE_ASYNC" />
+    </root>
+    
+</configuration>
